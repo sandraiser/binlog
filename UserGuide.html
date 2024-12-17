@@ -246,7 +246,7 @@ the following workaround is required:</p>
 };
 
 // BINLOG_ADAPT_ENUM(Nest::Nested, Bird) // Doesn't work, type is shadowed by field.
-typedef enum Nest::Nested NestedT; // workaround: use elaborated type specifier
+typedef enum Nest::Nested NestedT; // workaround: use elaborated type specifier // NOLINT
 BINLOG_ADAPT_ENUM(NestedT, Bird)
 </code></pre>
 <h2 id="logging-user-defined-structures"><a class="toclink" href="#logging-user-defined-structures">Logging User Defined Structures</a></h2>
@@ -307,6 +307,21 @@ struct Triplet
   std::array&lt;int, C&gt; c{};
 };
 BINLOG_ADAPT_TEMPLATE((typename A, typename B, std::size_t C), (Triplet&lt;A,B,C&gt;), a, b, c)
+</code></pre>
+<p>As of C++20, concepts can be also adapted for logging (namespaced concepts are also supported):</p>
+<pre><code>template&lt;typename T&gt;
+concept Stringable = requires(T a)
+{
+  { a.str() } -&gt; std::convertible_to&lt;std::string&gt;;
+};
+
+BINLOG_ADAPT_CONCEPT(Stringable, str)
+
+struct Foo {
+  std::string str() const { return "bar"; }
+};
+BINLOG_INFO("{}", Foo{});
+// Outputs: Stringable{ str: bar }
 </code></pre>
 <p>For more information see the Mserialize documentation on <a href="Mserialize.html#adapting-custom-types">Adapting custom types</a> and
 <a href="Mserialize.html#adapting-user-defined-recursive-types-for-visitation">Adapting user defined recursive types for visitation</a>.</p>
@@ -395,7 +410,7 @@ compressed logfiles:</p>
 </code></pre>
 <p>With piping, a live logfile that is being written by the application can be read,
 even if log rotation is configured:</p>
-<pre><code>$ tail -c0 -F logfile.blog | bread
+<pre><code>$ tail -c +0 -F logfile.blog | bread
 </code></pre>
 <p>To customize the output and for further options, see the builtin help:</p>
 <pre><code>$ bread -h
@@ -637,7 +652,7 @@ The Binlog test suite tests if this requirement holds on a given platform.</p>
       <hr/>
       <footer class="text-center text-muted">
         Feedback and help: <a href="https://github.com/Morgan-Stanley/binlog/issues">GitHub</a> |
-        Generated: 2021. 08. 25.
+        Generated: 2024. 12. 17.
       </footer>
       <hr/>
     </div>
